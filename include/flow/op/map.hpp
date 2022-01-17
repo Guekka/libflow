@@ -26,39 +26,38 @@ struct map_adaptor : flow_base<map_adaptor<Flow, Func>> {
 
     using item_type = std::invoke_result_t<Func&, item_t<Flow>>;
 
-    constexpr map_adaptor(Flow&& flow, Func func)
-        : flow_(std::move(flow)),
-          func_(std::move(func))
+    constexpr map_adaptor(Flow &&flow, Func func)
+        : flow_(std::move(flow)), func_(std::make_shared<Func>(std::move(func)))
     {}
 
     constexpr auto next() -> maybe<item_type>
     {
         if constexpr (is_infinite) {
-            return {invoke(func_, *flow_.next())};
+            return {invoke(*func_, *flow_.next())};
         } else {
-            return flow_.next().map(func_);
+            return flow_.next().map(*func_);
         }
     }
 
     constexpr auto advance(dist_t dist) -> maybe<item_type>
     {
         if constexpr (is_infinite) {
-            return {invoke(func_, *flow_.advance(dist))};
+            return {invoke(*func_, *flow_.advance(dist))};
         } else {
-            return flow_.advance(dist).map(func_);
+            return flow_.advance(dist).map(*func_);
         }
     }
 
     template <bool B = is_reversible_flow<Flow>>
     constexpr auto next_back() -> std::enable_if_t<B, maybe<item_type>>
     {
-        return flow_.next_back().map(func_);
+        return flow_.next_back().map(*func_);
     }
 
     template <typename F = Flow>
     constexpr auto subflow() & -> map_adaptor<subflow_t<F>, function_ref<Func>>
     {
-        return {flow_.subflow(), func_};
+        return {flow_.subflow(), *func_};
     }
 
     template <bool B = is_sized_flow<Flow>>
@@ -69,7 +68,7 @@ struct map_adaptor : flow_base<map_adaptor<Flow, Func>> {
 
 private:
     Flow flow_;
-    FLOW_NO_UNIQUE_ADDRESS Func func_;
+    FLOW_NO_UNIQUE_ADDRESS std::shared_ptr<Func> func_;
 };
 
 }
