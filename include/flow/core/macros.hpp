@@ -1,4 +1,8 @@
 
+// Copyright (c) 2022 Tristan Brindle (tcbrindle at gmail dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef FLOW_CORE_MACROS_HPP_INCLUDED
 #define FLOW_CORE_MACROS_HPP_INCLUDED
 
@@ -16,15 +20,21 @@
 #define FLOW_NO_UNIQUE_ADDRESS
 #endif
 
-#if defined(__cpp_coroutines)
-#  if defined(__has_include) // If we can, check for <experimental/coroutine>
-#    if __has_include(<experimental/coroutine>)
+#if defined(__cpp_impl_coroutine)  // We have language support for C++20 coroutines
+#  if defined(__has_include)
+#    if __has_include(<coroutine>)
 #      define FLOW_HAVE_COROUTINES
-#    endif // __cpp_coroutines
-#  else // can't check for it, let's hope for the best
-#    define FLOW_HAVE_COROUTINES
+#      define FLOW_HAVE_CPP20_COROUTINES
+#    endif  // __has_include(<coroutine>)
 #  endif // __has_include
-#endif // __cpp_coroutines
+#elif defined(__cpp_coroutines) // We have language support for TS coroutines
+#  if defined(__has_include)
+#    if __has_include(<experimental/coroutine>)
+#        define FLOW_HAVE_COROUTINES
+#        define FLOW_HAVE_TS_COROUTINES
+#    endif // __has_include(<experimental/coroutine>)
+#  endif // __has_include
+#endif
 
 #define FLOW_FWD(x) (static_cast<decltype(x)&&>(x))
 
