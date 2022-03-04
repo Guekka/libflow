@@ -10,7 +10,7 @@
 
 namespace flow {
 
-inline constexpr auto for_each = [](auto flowable, auto func) {
+inline constexpr auto for_each = [](auto &&flowable, auto func) {
     static_assert(is_flowable<decltype(flowable)>,
         "First argument to flow::for_each() must be Flowable");
     return flow::from(FLOW_FWD(flowable)).for_each(std::move(func));
